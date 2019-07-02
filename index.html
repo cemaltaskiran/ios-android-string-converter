@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>String Converter</title>
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+    <style>
+        html,
+        body,
+        .container-fluid {
+            height: 100%;
+        }
+
+        .container-fluid {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-row {
+            height: 100%;
+        }
+
+        textarea {
+            height: calc(100% - 1.5rem) !important;
+        }
+
+        #convert-button {
+            text-transform: uppercase;
+            border-radius: .25rem 0 0 .25rem !important;
+            flex: 1 100%;
+        }
+
+        #switch-button {
+            border-radius: 0 .25rem .25rem 0 !important;
+            flex: 1 0 auto;
+        }
+
+        #switch-button i {
+            padding-right: .25rem;
+        }
+
+        pointer {
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body onload="setup()">
+    <div class="container-fluid">
+        <div class="row mt-3">
+            <div class="col-md-12">
+                <div class="alert alert-info mx-auto" role="alert">
+                    This tool converts string resource from <strong id="strong-left"></strong> to <strong
+                        id="strong-right"></strong>. You can change direction by clicking <pointer
+                        onclick="switchMode();"><u>here</u></pointer>.
+                </div>
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group col-lg-6">
+                <div>
+                    <label for="left" class="h5 mr-2 text-primary" id="label-left"></label>
+                    <pointer><u onclick="copy('left')">Copy</u></pointer>
+                    <small class="text-success d-none" id="left-copied">Copied.</small>
+                </div>
+                <textarea id="left" class="form-control"></textarea>
+            </div>
+            <div class="form-group col-lg-6">
+                <div>
+                    <label for="right" class="h5 mr-2 text-primary" id="label-right"></label>
+                    <pointer><u onclick="copy('right')">Copy</u></pointer>
+                    <small class="text-success d-none" id="right-copied">Copied.</small>
+                </div>
+                <textarea id="right" class="form-control"></textarea>
+            </div>
+        </div>
+        <div class="row my-3">
+            <div class="col-md">
+                <div style="display: flex; flex-direction: row;">
+                    <button type="button" class="btn btn-dark float-left" id="convert-button"
+                        onclick="convert();">Convert</button>
+                    <button type="button" class="btn btn-success rounded-right" id="switch-button"
+                        onclick="switchMode();"><i class="fa fa-exchange" aria-hidden="true"></i> Switch resuources
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+        integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous">
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
+        integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous">
+    </script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+        integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous">
+    </script>
+    <script>
+        var androidTxt = "Android";
+        var iosTxt = "IOS";
+        var leftText = localStorage.getItem("leftText")
+        var rightText = localStorage.getItem("rightText")
+        var toAndroid;
+        var copyTimeout;
+
+        if (leftText) {
+            document.getElementById('left').value = leftText;
+        }
+
+        if (rightText) {
+            document.getElementById('right').value = rightText;
+        }
+
+        function setup() {
+            if (toAndroid == undefined) {
+                if (localStorage.getItem("toAndroid")) {
+                    toAndroid = JSON.parse(localStorage.getItem("toAndroid"))
+                } else {
+                    toAndroid = false;
+                }
+            }
+            localStorage.setItem("toAndroid", toAndroid);
+
+            if (toAndroid) {
+                document.getElementById('label-left').innerHTML = iosTxt;
+                document.getElementById('strong-left').innerHTML = iosTxt;
+                document.getElementById('label-right').innerHTML = androidTxt;
+                document.getElementById('strong-right').innerHTML = androidTxt;
+            } else {
+                document.getElementById('label-left').innerHTML = androidTxt;
+                document.getElementById('strong-left').innerHTML = androidTxt;
+                document.getElementById('label-right').innerHTML = iosTxt;
+                document.getElementById('strong-right').innerHTML = iosTxt;
+            }
+            console.log("toAndroid:" + toAndroid);
+        }
+
+        function switchMode() {
+            document.getElementById('switch-button').focus();
+            toAndroid = !toAndroid;
+            setup();
+        }
+
+        function convert() {
+            if (toAndroid)
+                convertToAndroid();
+            else
+                convertToIOS();
+            localStorage.setItem("leftText", leftText);
+            localStorage.setItem("rightText", rightText);
+        }
+
+        function convertToIOS() {
+            debugger;
+            leftText = document.getElementById('left').value.trim();
+            rightText = leftText.replace(/<string name="/g, '"');
+            rightText = rightText.replace(/">/g, '" = "')
+            rightText = rightText.replace(/<\/string>\n?/g, '";\n')
+            document.getElementById('right').value = rightText;
+        }
+
+        function convertToAndroid() {
+            debugger;
+            leftText = document.getElementById('left').value.trim();
+            rightText = leftText.replace(/^ *"/gm, '<string name="');
+            rightText = rightText.replace(/" ?= ?"/g, '">')
+            rightText = rightText.replace(/";/g, '</string>')
+            document.getElementById('right').value = rightText;
+        }
+
+        function copy(id) {
+            document.getElementById('left-copied').classList.add('d-none');
+            document.getElementById('right-copied').classList.add('d-none');
+            var copyText = document.getElementById(id);
+            copyText.select();
+            document.execCommand("copy");
+            copyText = document.getElementById(id + '-copied');
+            copyText.classList.remove('d-none');
+            if (copyTimeout) {
+                clearTimeout(copyTimeout);
+            }
+            copyTimeout = setTimeout(function () {
+                copyText.classList.add('d-none');
+            }, 2000);
+        }
+    </script>
+</body>
+
+</html>
